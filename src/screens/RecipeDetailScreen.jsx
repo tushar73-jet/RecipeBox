@@ -7,9 +7,12 @@ export default function RecipeDetailScreen({ route }) {
   const [meal, setMeal] = useState(initialMeal || null);
   const [loading, setLoading] = useState(!initialMeal);
   const [isFavorite, setIsFavorite] = useState(false);
+  const [cookingTime, setCookingTime] = useState("30 mins");
 
 
   useEffect(() => {
+    const randomTime = Math.floor(Math.random() * 45) + 15; 
+    setCookingTime(`${randomTime} mins`);
     const fetchFullDetails = async () => {
       try {
         const id = idMeal || initialMeal?.idMeal;
@@ -87,6 +90,8 @@ export default function RecipeDetailScreen({ route }) {
       <Text style={styles.title}>{meal.strMeal}</Text>
       <Text style={styles.category}>{meal.strCategory} - {meal.strArea}</Text>
 
+      <Text style={styles.time}>⏱ Ready in {cookingTime}</Text>
+
       <View style={{ marginBottom: 20 }}>
         <Button 
           title={isFavorite ? "Remove from Favorites" : "Save to Favorites"} 
@@ -120,4 +125,5 @@ const styles = StyleSheet.create({
   ingredient: { fontSize: 15, marginLeft: 8, marginBottom: 4 },
   instructions: { fontSize: 15, lineHeight: 24, marginTop: 6, marginBottom: 30 },
   center: { flex: 1, justifyContent: 'center', alignItems: 'center' },
+  time: { fontSize: 16, fontWeight: "600", color: "#e91e63", marginBottom: 15 }
 });
