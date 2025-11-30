@@ -62,7 +62,6 @@ export default function HomeScreen({ navigation }) {
         onChangeText={setQuery}
       />
 
-      //toggle search
       <View style={styles.toggleContainer}>
         <TouchableOpacity 
           style={[styles.toggleBtn, searchMode === "name" && styles.activeBtn]}
