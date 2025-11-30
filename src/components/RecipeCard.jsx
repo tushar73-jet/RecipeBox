@@ -8,7 +8,7 @@ export default function RecipeCard({ meal }) {
   return (
     <TouchableOpacity
       style={styles.card}
-      onPress={() => navigation.navigate("RecipeDetail", { idMeal: meal.idMeal })}
+      onPress={() => navigation.navigate("RecipeDetail", { meal })}
     >
       <Image source={{ uri: meal.strMealThumb }} style={styles.image} />
       <Text style={styles.title}>{meal.strMeal}</Text>
@@ -24,7 +24,8 @@ const styles = StyleSheet.create({
     backgroundColor: "#f9f9f9",
     borderRadius: 10,
     padding: 10,
+    elevation: 3
   },
   image: { width: 80, height: 80, borderRadius: 10, marginRight: 10 },
-  title: { fontSize: 18, fontWeight: "600" },
+  title: { fontSize: 18, fontWeight: "600", flex: 1 }
 });
