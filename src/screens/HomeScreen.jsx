@@ -31,7 +31,12 @@ export default function HomeScreen({ navigation }) {
 
   const filterByCategory = async (category) => {
     try {
-      const res = await fetch(`https://www.themealdb.com/api/json/v1/1/filter.php?c=${category}`);
+      
+      let apiCategory = category;
+      if (category === "Non-Vegetarian") {
+        apiCategory = "Chicken"; 
+      }
+      const res = await fetch(`https://www.themealdb.com/api/json/v1/1/filter.php?c=${apiCategory}`);
       const data = await res.json();
       setRecipes(data.meals || []);
     } catch (err) {
@@ -84,7 +89,7 @@ export default function HomeScreen({ navigation }) {
       <View style={styles.filterContainer}>
         <Text style={styles.filterLabel}>Quick Filters:</Text>
         <ScrollView horizontal showsHorizontalScrollIndicator={false}>
-          {["Vegetarian", "Dessert", "Chicken", "Pasta"].map((cat) => (
+          {["Vegetarian", "Dessert", "Non-Vegetarian"].map((cat) => (
             <TouchableOpacity key={cat} style={styles.chip} onPress={() => filterByCategory(cat)}>
               <Text style={styles.chipText}>{cat}</Text>
             </TouchableOpacity>
