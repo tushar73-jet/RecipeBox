@@ -1,48 +1,67 @@
 import React, { useState } from "react";
-import { View, TextInput, Button, FlatList, Text, Image, TouchableOpacity, StyleSheet, ScrollView} from "react-native";
+import { View, TextInput, Button, FlatList, Text, Image, TouchableOpacity, StyleSheet, ScrollView, ActivityIndicator, Alert} from "react-native";
 import RecipeCard from "../components/RecipeCard";
 
 export default function HomeScreen({ navigation }) {
   const [query, setQuery] = useState("");
   const [recipes, setRecipes] = useState([]);
   const [searchMode, setSearchMode] = useState("name");
+  const [loading, setLoading] = useState(false);
 
   const searchRecipes = async () => {
     if (!query) return;
+    setLoading(true)
     try {
       const res = await fetch(`https://www.themealdb.com/api/json/v1/1/search.php?s=${query}`);
       const data = await res.json();
       setRecipes(data.meals || []);
     } catch (err) {
-      console.error(err);
-    }
-  };
+      Alert.alert("Error", "Failed to fetch recipes.");
+    } finally {
+      setLoading(false);
+  }
+}
 
   const searchByIngredient = async () => {
     if (!query) return;
+    setLoading(true);
     try {
       const res = await fetch(`https://www.themealdb.com/api/json/v1/1/filter.php?i=${query}`);
       const data = await res.json();
       setRecipes(data.meals || []);
     } catch (err) {
-      console.error(err);
+      Alert.alert("Error", "Failed to fetch recipes.");}
+      finally {
+      setLoading(false);
     }
   };
 
   const filterByCategory = async (category) => {
+    setLoading(true);
+    setRecipes([])
     try {
-      
-      let apiCategory = category;
       if (category === "Non-Vegetarian") {
-        apiCategory = "Chicken"; 
-      }
-      const res = await fetch(`https://www.themealdb.com/api/json/v1/1/filter.php?c=${apiCategory}`);
+        const nonVegCategories = ["Chicken", "Beef", "Pork", "Lamb", "Goat", "Seafood"];
+        const promises = nonVegCategories.map(cat => 
+          fetch(`https://www.themealdb.com/api/json/v1/1/filter.php?c=${cat}`).then(res => res.json())
+        );
+        const results = await Promise.all(promises)
+        let allMeals = [];
+        results.forEach(data => {
+          if (data.meals) allMeals = [...allMeals, ...data.meals];
+        });
+        setRecipes(allMeals);
+      } else{
+      const res = await fetch(`https://www.themealdb.com/api/json/v1/1/filter.php?c=${category}`);
       const data = await res.json();
       setRecipes(data.meals || []);
-    } catch (err) {
-      console.error(err);
     }
-  };
+    } catch (err) {
+      Alert.alert("Error", "Could not filter recipes.");
+    } finally {
+      setLoading(false);
+    }
+  }
 
   const handleSearch = () => {
     if (searchMode === "name") {
@@ -97,6 +116,8 @@ export default function HomeScreen({ navigation }) {
         </ScrollView>
       </View>
 
+      {loading && <ActivityIndicator size="large" color="#007AFF" style={{marginTop: 20}} />}
+
       <FlatList
         data={recipes}
         keyExtractor={(item) => item.idMeal}
@@ -105,6 +126,8 @@ export default function HomeScreen({ navigation }) {
           <RecipeCard meal={item} />
         
         )}
+        ListEmptyComponent={
+          !loading && <Text style={styles.emptyText}>No recipes found. Try searching or filtering!</Text>}
       />
     </View>
   );
@@ -134,4 +157,6 @@ const styles = StyleSheet.create({
   filterLabel: { fontSize: 14, fontWeight: '600', marginBottom: 5, color: '#555' },
   chip: { backgroundColor: '#FF6F61', paddingHorizontal: 12, paddingVertical: 6, borderRadius: 20, marginRight: 8 },
   chipText: { color: '#fff', fontWeight: 'bold', fontSize: 12 },
-});
+  emptyText: { textAlign: 'center', marginTop: 30, color: '#888', fontSize: 16 }
+}
+)
