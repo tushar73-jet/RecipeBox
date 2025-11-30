@@ -1,8 +1,46 @@
-import React from "react";
-import { ScrollView, Text, Image, StyleSheet } from "react-native";
+import React, { useState, useEffect } from "react";
+import { ScrollView, Text, Image, StyleSheet, ActivityIndicator, View } from "react-native";
 
 export default function RecipeDetailScreen({ route }) {
-  const { meal } = route.params;
+  const { meal: initialMeal, idMeal } = route.params || {};
+  const [meal, setMeal] = useState(initialMeal || null);
+  const [loading, setLoading] = useState(!initialMeal);
+
+
+  useEffect(() => {
+    const fetchFullDetails = async () => {
+      try {
+        const id = idMeal || initialMeal?.idMeal;
+        if (!id) return;
+
+        const res = await fetch(`https://www.themealdb.com/api/json/v1/1/lookup.php?i=${id}`);
+        const data = await res.json();
+        if (data.meals && data.meals.length > 0) {
+          setMeal(data.meals[0]);
+        }
+      } catch (error) {
+        console.error("Error fetching details:", error);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    // If we don't have instructions yet, fetch them
+    if (!meal || !meal.strInstructions) {
+      fetchFullDetails();
+    } else {
+      setLoading(false);
+    }
+  }, [idMeal, initialMeal]);
+
+  if (loading) {
+    return <View style={styles.center}><ActivityIndicator size="large" color="#0000ff" /></View>;
+  }
+
+  if (!meal) {
+    return <View style={styles.center}><Text>Recipe not found.</Text></View>;
+  }
+
 
   return (
     <ScrollView style={styles.container}>
@@ -34,4 +72,5 @@ const styles = StyleSheet.create({
   section: { fontSize: 18, fontWeight: "bold", marginTop: 12 },
   ingredient: { fontSize: 15, marginLeft: 8 },
   instructions: { fontSize: 15, lineHeight: 22, marginTop: 6 },
+  center: { flex: 1, justifyContent: 'center', alignItems: 'center' },
 });
